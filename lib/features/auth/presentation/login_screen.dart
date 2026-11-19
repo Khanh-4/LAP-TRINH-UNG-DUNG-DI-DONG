@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/router/app_routes.dart';
 import 'auth_controller.dart';
+import 'auth_validators.dart';
+import 'widgets/auth_error_text.dart';
+import 'widgets/submit_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,6 +34,35 @@ class _LoginScreenState extends State<LoginScreen> {
       email: _emailController.text,
       password: _passwordController.text,
     );
+  }
+
+  Future<void> _forgotPassword() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final auth = context.read<AuthController>();
+    final email = _emailController.text.trim();
+    if (AuthValidators.email(email) != null) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Nhập email ở trên trước để đặt lại mật khẩu'),
+        ),
+      );
+      return;
+    }
+    final ok = await auth.sendPasswordReset(email);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'Đã gửi email đặt lại mật khẩu tới $email'
+              : auth.errorMessage ?? 'Không gửi được email',
+        ),
+      ),
+    );
+  }
+
+  void _goToRegister() {
+    context.read<AuthController>().clearError();
+    context.push(AppRoutes.register);
   }
 
   @override
@@ -63,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(labelText: 'Email'),
-                    validator: _validateEmail,
+                    validator: AuthValidators.email,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -71,26 +105,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(labelText: 'Mật khẩu'),
-                    validator: _validatePassword,
+                    validator: AuthValidators.password,
                     onFieldSubmitted: (_) => _submit(),
                   ),
-                  if (auth.errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      auth.errorMessage!,
-                      style: TextStyle(color: theme.colorScheme.error),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      key: const Key('login_forgot_password'),
+                      onPressed: auth.isLoading ? null : _forgotPassword,
+                      child: const Text('Quên mật khẩu?'),
                     ),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton(
+                  ),
+                  AuthErrorText(message: auth.errorMessage),
+                  const SizedBox(height: 12),
+                  SubmitButton(
                     key: const Key('login_submit'),
-                    onPressed: auth.isLoading ? null : _submit,
-                    child: auth.isLoading
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Đăng nhập'),
+                    label: 'Đăng nhập',
+                    isLoading: auth.isLoading,
+                    onPressed: _submit,
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    key: const Key('login_go_register'),
+                    onPressed: auth.isLoading ? null : _goToRegister,
+                    child: const Text('Chưa có tài khoản? Đăng ký'),
                   ),
                 ],
               ),
@@ -99,19 +137,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  static String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
-    if (email.isEmpty) return 'Vui lòng nhập email';
-    if (!email.contains('@')) return 'Email không hợp lệ';
-    return null;
-  }
-
-  static String? _validatePassword(String? value) {
-    if ((value ?? '').length < AppConstants.minPasswordLength) {
-      return 'Mật khẩu phải có ít nhất ${AppConstants.minPasswordLength} ký tự';
-    }
-    return null;
   }
 }

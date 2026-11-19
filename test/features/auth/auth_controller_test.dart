@@ -43,4 +43,30 @@ void main() {
 
     expect(controller.isSignedIn, isFalse);
   });
+
+  test('sign up sets user with trimmed display name', () async {
+    final ok = await controller.signUp(
+      email: 'b@c.com',
+      password: '123456',
+      displayName: '  Nguyễn Văn A ',
+    );
+
+    expect(ok, isTrue);
+    expect(controller.user?.displayName, 'Nguyễn Văn A');
+  });
+
+  test('password reset with invalid email fails', () async {
+    final ok = await controller.sendPasswordReset('abc');
+
+    expect(ok, isFalse);
+    expect(controller.errorMessage, 'Email không hợp lệ');
+  });
+
+  test('clearError removes the previous error', () async {
+    await controller.signIn(email: 'abc', password: '123456');
+
+    controller.clearError();
+
+    expect(controller.errorMessage, isNull);
+  });
 }

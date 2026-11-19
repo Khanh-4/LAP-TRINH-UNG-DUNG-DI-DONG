@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_shell.dart';
 import '../../features/scan/presentation/scan_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -15,13 +16,17 @@ GoRouter createRouter(AuthController auth) {
     initialLocation: AppRoutes.transactions,
     refreshListenable: auth,
     redirect: (context, state) {
-      final isAtLogin = state.matchedLocation == AppRoutes.login;
-      if (!auth.isSignedIn) return isAtLogin ? null : AppRoutes.login;
-      if (isAtLogin) return AppRoutes.transactions;
+      final isPublic = AppRoutes.public.contains(state.matchedLocation);
+      if (!auth.isSignedIn) return isPublic ? null : AppRoutes.login;
+      if (isPublic) return AppRoutes.transactions;
       return null;
     },
     routes: [
       GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginScreen()),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (_, _) => const RegisterScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(navigationShell: shell),
         branches: [

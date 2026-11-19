@@ -25,7 +25,7 @@ flutter test test/features/auth/auth_controller_test.dart   # single file
 - State: `provider` + `ChangeNotifier` controllers. Data access only through repository interfaces (e.g. `AuthRepository`); implementations are swappable (`FakeAuthRepository` now, Firebase later), chosen in `main.dart` and injected into `ExpenseApp`.
 - Navigation: `go_router` in `lib/core/router/app_router.dart`. `refreshListenable: AuthController` + `redirect` gate everything behind login; `StatefulShellRoute.indexedStack` drives the 4-tab `HomeShell` (Giao dịch, Quét, Thống kê, Cài đặt).
 - Models are immutable. UI strings are Vietnamese.
-- Firebase is not wired yet; config files (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist`) are gitignored and generated per machine via `flutterfire configure`.
+- Firebase project `chitieuai-99447` (Auth: Email/Password). `main.dart` tries `Firebase.initializeApp()` (native config, no firebase_options import) and falls back to `FakeAuthRepository` on failure. Config files (`firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist`) are gitignored and generated per machine via `flutterfire configure`. The google-services Gradle plugin is applied conditionally at the bottom of `android/app/build.gradle.kts`; after re-running flutterfire, remove the unconditional `id("com.google.gms.google-services")` it adds to `plugins {}`.
 
 ## Hard constraints from the course
 
