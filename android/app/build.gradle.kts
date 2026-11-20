@@ -47,3 +47,12 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Google Services chỉ bật khi máy đã có android/app/google-services.json
+// (sinh bằng `flutterfire configure`, không commit). Máy chưa cấu hình vẫn
+// build được và app tự dùng đăng nhập giả lập.
+// Lưu ý: chạy lại `flutterfire configure` sẽ thêm lại id("com.google.gms.google-services")
+// vào khối plugins ở đầu file — hãy xóa dòng đó đi, giữ khối if này.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}

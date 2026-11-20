@@ -10,6 +10,8 @@ class AuthController extends ChangeNotifier {
     _subscription = _repository.authStateChanges().listen(_onUserChanged);
   }
 
+  static const String _genericError = 'Đã có lỗi xảy ra, vui lòng thử lại';
+
   final AuthRepository _repository;
   late final StreamSubscription<AppUser?> _subscription;
 
@@ -22,32 +24,62 @@ class AuthController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Trả về `true` nếu đăng nhập thành công; lỗi được lưu ở [errorMessage].
-  Future<bool> signIn({required String email, required String password}) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    try {
+  /// Các hàm dưới trả về `true` nếu thành công; lỗi được lưu ở [errorMessage].
+  Future<bool> signIn({required String email, required String password}) {
+    return _run(() async {
       _user = await _repository.signInWithEmail(
         email: email.trim(),
         password: password,
       );
+    });
+  }
+
+  Future<bool> signUp({
+    required String email,
+    required String password,
+    required String displayName,
+  }) {
+    return _run(() async {
+      _user = await _repository.signUpWithEmail(
+        email: email.trim(),
+        password: password,
+        displayName: displayName.trim(),
+      );
+    });
+  }
+
+  Future<bool> sendPasswordReset(String email) =>
+      _run(() => _repository.sendPasswordResetEmail(email.trim()));
+
+  Future<void> signOut() async {
+    await _repository.signOut();
+    _onUserChanged(null);
+  }
+
+  void clearError() {
+    if (_errorMessage == null) return;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  Future<bool> _run(Future<void> Function() action) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await action();
       return true;
     } on AuthException catch (e) {
       _errorMessage = e.message;
       return false;
-    } catch (_) {
-      _errorMessage = 'Đã có lỗi xảy ra, vui lòng thử lại';
+    } catch (e) {
+      debugPrint('AuthController: lỗi không mong đợi: $e');
+      _errorMessage = _genericError;
       return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  Future<void> signOut() async {
-    await _repository.signOut();
-    _onUserChanged(null);
   }
 
   void _onUserChanged(AppUser? user) {

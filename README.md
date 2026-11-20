@@ -1,6 +1,6 @@
 # Chi Tiêu AI: Quản lý chi tiêu cá nhân và quét hóa đơn bằng AI
 
-Đồ án cuối kỳ môn **CMP177, Lập trình trên thiết bị di động**. Ứng dụng được viết bằng Flutter và dùng Firebase làm backend (sẽ tích hợp).
+Đồ án cuối kỳ môn **CMP177, Lập trình trên thiết bị di động**. Ứng dụng được viết bằng Flutter và dùng Firebase làm backend.
 
 ## Thành viên và phân công
 
@@ -24,7 +24,7 @@ flutter pub get
 flutter run
 ```
 
-Hiện app dùng **đăng nhập giả lập** (`FakeAuthRepository`), nên chưa cần cấu hình Firebase. Có thể nhập email bất kỳ chứa `@` và mật khẩu từ 6 ký tự trở lên.
+Nếu máy **chưa cấu hình Firebase**, app vẫn chạy nhưng tự chuyển sang **đăng nhập giả lập**. Khi đó có thể nhập email bất kỳ chứa `@` và mật khẩu từ 6 ký tự trở lên.
 
 Chạy kiểm thử và phân tích mã:
 
@@ -33,16 +33,24 @@ flutter analyze
 flutter test
 ```
 
-## Cấu hình Firebase (sắp có)
+## Cấu hình Firebase
 
-Các file cấu hình Firebase **không được commit** vì đã nằm trong `.gitignore`. Mỗi thành viên tự tạo:
+Project Firebase của nhóm có ID `chitieuai-99447`. Phần đăng nhập dùng Authentication với phương thức Email/Password.
+
+Các file cấu hình **không được commit** vì đã nằm trong `.gitignore`: `google-services.json`, `GoogleService-Info.plist`, `firebase_options.dart`, `firebase.json`. Mỗi thành viên tự sinh ra trên máy mình. Trước đó, chủ project cần thêm email của bạn vào Firebase Console → Project settings → Users and permissions.
 
 ```bash
+npm install -g firebase-tools
 dart pub global activate flutterfire_cli
-flutterfire configure   # chọn project Firebase của nhóm
+export PATH="$PATH:$HOME/.pub-cache/bin"
+firebase login            # trên WSL dùng: firebase login --no-localhost
+flutterfire configure --project=chitieuai-99447 --platforms=android,ios \
+  --android-package-name=com.cmp177.expense_ai --ios-bundle-id=com.cmp177.expenseAi --yes
 ```
 
-Lệnh trên sinh ra `lib/firebase_options.dart`, `android/app/google-services.json` và `ios/Runner/GoogleService-Info.plist` ngay trên máy của bạn.
+> ⚠️ Sau khi chạy `flutterfire configure`, mở `android/app/build.gradle.kts` và **xóa** dòng `id("com.google.gms.google-services")` mà công cụ vừa thêm vào khối `plugins { }`. Plugin này đã được bật có điều kiện ở cuối file. Nếu để nguyên, máy chưa cấu hình sẽ không build được.
+
+App chọn backend lúc khởi động trong `lib/main.dart`: có file cấu hình thì dùng Firebase, không có thì dùng bản giả lập.
 
 ## Cấu trúc thư mục
 
@@ -78,6 +86,8 @@ Mỗi tính năng chia làm 3 lớp:
 | Quản lý state | provider | ChangeNotifier cho controller |
 | Điều hướng | go_router | Route khai báo, bottom navigation, chặn khi chưa đăng nhập |
 | Định dạng | intl | Tiền VND, ngày tháng |
+| Backend | firebase_core | Khởi tạo Firebase |
+| Xác thực | firebase_auth | Đăng nhập, đăng ký, quên mật khẩu bằng email |
 
 ## Quy ước làm việc nhóm
 
