@@ -10,6 +10,8 @@
 | _(tên B)_ | B: Giao dịch và ngân sách | Thêm/sửa/xóa thu chi (Firestore), danh mục, ví, ngân sách và cảnh báo, tìm kiếm, lọc |
 | _(tên C)_ | C: AI và thống kê | Quét hóa đơn (image_picker + Gemini qua firebase_ai), biểu đồ (fl_chart) |
 
+> 👥 **Thành viên nhóm:** đọc [docs/](docs/README.md) trước khi bắt đầu (cài đặt, quy trình Git, quy tắc code, kế hoạch sprint).
+
 ## Yêu cầu
 
 - Flutter 3.x (Dart từ 3.7 trở lên). Kiểm tra bằng `flutter doctor`.
@@ -72,6 +74,8 @@ lib/
 │   └── stats/                # (C) thống kê
 └── shared/widgets/           # widget dùng chung
 test/                         # cùng cấu trúc với lib/
+docs/                         # tài liệu làm việc nhóm, kế hoạch sprint
+firestore.rules               # luật bảo mật Firestore
 ```
 
 Mỗi tính năng chia làm 3 lớp:
